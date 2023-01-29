@@ -5,57 +5,30 @@ using System.CommandLine.Builder;
 using System.CommandLine.Hosting;
 using System.CommandLine.Parsing;
 
-var fileOption = new Option<FileInfo?>(
-            name: "--file",
-            description: "The file to import.");
-fileOption.IsRequired = true;
-
-var rootCommand = new RootCommand();
+var rootCommand = new ImporterRootCommand();
 rootCommand.Description = Description();
 
-var productsCommand = new Command("products", "Import products from a file.")
-{
-    fileOption
-};
-
-var pricesCommand = new Command("prices", "Import prices from a file.")
-{
-    fileOption
-};
-
+var productsCommand = new ProductsCommand();
 rootCommand.AddCommand(productsCommand);
+
+var pricesCommand = new PricesCommand();
 rootCommand.AddCommand(pricesCommand);
-
-
-productsCommand.SetHandler((file) =>
-{
-    ReadFile(file!);
-}, fileOption);
-
-pricesCommand.SetHandler((file) =>
-{
-    ReadFile(file!);
-}, fileOption);
 
 var commandLineBuilder = new CommandLineBuilder(rootCommand)
     .UseHost(host => 
     {
         host.ConfigureServices((context, services) =>
         {
-            services.AddScoped<IMyService, MyService>();
-        });
-     })
+            services.AddScoped<IReadFileService, ReadFileService>();
+        })
+        .UseCommandHandler<ProductsCommand, ProductsCommandHandler>()
+        .UseCommandHandler<PricesCommand, ProductsCommandHandler>();
+    })
     .UseDefaults();
 
 var parser = commandLineBuilder.Build();
 
 return await parser.InvokeAsync(args);
-
-static void ReadFile(FileInfo file)
-{
-    File.ReadLines(file.FullName).ToList()
-        .ForEach(line => Console.WriteLine(line));
-}
 
 static string Description() => @"
  ___                            _

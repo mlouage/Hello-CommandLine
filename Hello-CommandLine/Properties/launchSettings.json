@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "Hello-CommandLine": {
+      "commandName": "Project",
+      "commandLineArgs": "products --file Hello-CommandLine.deps.json"
+    }
+  }
+}
